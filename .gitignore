@@ -1,0 +1,25 @@
+* emacs temp files
+*~
+
+* MAC
+*.DS_STORE
+Thumbs.db
+
+*.zip
+*.exe
+a.out
+*.o
+*.orig
+*.bak
+*.bat
+
+# libinteractive
+*.cbp
+*.layout
+*.bat
+libinteractive
+libinteractive.jar
+Makefile
+
+.vscode
+results

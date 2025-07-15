@@ -80,6 +80,10 @@ jobs:
     - name: Download omegaUp-ci container
       run: |
         docker login https://docker.pkg.github.com -u ${{ github.actor }} -p ${{ github.token }}
+
+    - name: Run tests if utils/runtests.py exists
+      if: hashFiles('utils/runtests.py') != ''
+      run: |
         python3 ./utils/runtests.py ${{ env.CI_FLAGS }} --only-pull-image
 
     - name: Generate pngs/testplan

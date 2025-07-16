@@ -14,7 +14,7 @@ If you think that a course content in this repository has ran out of sync with t
 To do this, follow these steps:
 1. Fork the repository.
 2. Create a new branch for your changes.
-3. Edit the `sync-course.txt` file to include the course name and the specific content that is out of sync.
+3. Edit the `sync-course.json` file to include the course name and the specific content that is out of sync.
 4. Commit your changes with a clear message.
 5. Push your changes to your forked repository.
 6. Create a pull request to the main repository with target branch sync-course.

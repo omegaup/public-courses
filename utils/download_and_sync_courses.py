@@ -29,13 +29,6 @@ COURSE_ALIASES = [
 BASE_COURSE_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Courses"))
 
 
-if os.path.exists(BASE_COURSE_FOLDER):
-    LOG.warning("Delete existing course folder to avoid conflicts")
-    shutil.rmtree(BASE_COURSE_FOLDER)
-
-
-
-
 def handle_input():
     global BASE_URL, API_TOKEN
     parser = argparse.ArgumentParser(description="Download and extract problems from multiple course assignments")
@@ -44,7 +37,6 @@ def handle_input():
     args = parser.parse_args()
     BASE_URL = args.url
     return args.api_token
-
 
 
 def get_json(endpoint: str, params: Dict[str, str]) -> Dict[str, Any]:
@@ -77,9 +69,6 @@ def get_assignment_details(course_alias: str, assignment_alias: str):
         "course": course_alias,
         "assignment": assignment_alias
     })
-
-
-
 
 
 def download_and_unzip(problem_alias: str, assignment_folder: str):
@@ -141,12 +130,14 @@ def download_and_unzip(problem_alias: str, assignment_folder: str):
         LOG.error(f"❌ Failed to download '{problem_alias}': {e}")
 
 
-
-
 def main():
     global API_CLIENT
     api_token = handle_input()
     API_CLIENT = omegaup.api.Client(api_token=api_token, url=BASE_URL)
+
+    if os.path.exists(BASE_COURSE_FOLDER):
+        LOG.warning("Delete existing course folder to avoid conflicts")
+        shutil.rmtree(BASE_COURSE_FOLDER)
 
     os.makedirs(BASE_COURSE_FOLDER, exist_ok=True)
     all_problems = []
@@ -202,7 +193,6 @@ def main():
         LOG.info(f"Writing problems.json to {problems_json_path}")
         json.dump({"problems": all_problems}, f, indent=2, ensure_ascii=False)
     LOG.info("📝 Created problems.json with all problem paths.")
-
 
 
 if __name__ == "__main__":

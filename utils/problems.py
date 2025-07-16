@@ -49,12 +49,18 @@ def repositoryRoot() -> str:
     """Returns the root directory of the project.
 
     If this is a submodule, it gets the root of the top-level working tree.
+    Raises RuntimeError if it fails to determine the root.
     """
-    return subprocess.check_output([
-        'git', 'rev-parse', '--show-superproject-working-tree',
-        '--show-toplevel'
-    ],
-                                   universal_newlines=True).strip().split()[0]
+    try:
+        output = subprocess.check_output([
+            'git', 'rev-parse', '--show-superproject-working-tree',
+            '--show-toplevel'
+        ], universal_newlines=True)
+        return output.strip().split()[0]
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Failed to find Git repository root: not inside a Git repo.")
+    except FileNotFoundError:
+        raise RuntimeError("Git is not installed or not found in PATH.")
 
 
 def enumerateFullPath(path: str) -> List[str]:

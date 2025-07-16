@@ -15,10 +15,15 @@ class Problem(NamedTuple):
 
     @staticmethod
     def load(problemPath: str, rootDirectory: str) -> 'Problem':
-        """Load a single proble from the path."""
-        with open(os.path.join(rootDirectory, problemPath,
-                               'settings.json')) as f:
-            problemConfig = json.load(f)
+        """Load a single problem from the path."""
+        settings_path = os.path.join(rootDirectory, problemPath, 'settings.json')
+        try:
+            with open(settings_path) as f:
+                problemConfig = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"settings.json not found at: {settings_path}")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON format in settings.json at: {settings_path}. Error: {e}")
 
         return Problem(path=problemPath,
                        title=problemConfig['title'],

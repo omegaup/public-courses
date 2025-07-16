@@ -7,6 +7,13 @@ import json
 from typing import Any, List, Mapping, NamedTuple, NoReturn, Optional, Sequence
 
 
+SETTINGS_JSON = 'settings.json'
+GITIGNORE = '.gitignore'
+OUT_PATTERN = '**/*.out'
+PROBLEMS_JSON = 'problems.json'
+DEFAULT_COMMIT_RANGE = 'origin/main...HEAD'
+
+
 class Problem(NamedTuple):
     """Represents a single problem."""
     path: str
@@ -16,14 +23,14 @@ class Problem(NamedTuple):
     @staticmethod
     def load(problemPath: str, rootDirectory: str) -> 'Problem':
         """Load a single problem from the path."""
-        settings_path = os.path.join(rootDirectory, problemPath, 'settings.json')
+        settings_path = os.path.join(rootDirectory, problemPath, SETTINGS_JSON)
         try:
             with open(settings_path) as f:
                 problemConfig = json.load(f)
         except FileNotFoundError:
-            raise FileNotFoundError(f"settings.json not found at: {settings_path}")
+            raise FileNotFoundError(f"{SETTINGS_JSON} not found at: {settings_path}")
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format in settings.json at: {settings_path}. Error: {e}")
+            raise ValueError(f"Invalid JSON format in {SETTINGS_JSON} at: {settings_path}. Error: {e}")
 
         return Problem(path=problemPath,
                        title=problemConfig['title'],
@@ -35,12 +42,12 @@ class Problem(NamedTuple):
         .out files are only generated if there is a .gitignore file that
         contains the line `**/*.out` in the problem directory.
         """
-        gitignorePath = os.path.join(rootDirectory, self.path, '.gitignore')
+        gitignorePath = os.path.join(rootDirectory, self.path, GITIGNORE)
         if not os.path.isfile(gitignorePath):
             return False
         with open(gitignorePath, 'r') as f:
             for line in f:
-                if line.strip() == '**/*.out':
+                if line.strip() == OUT_PATTERN:
                     return True
         return False
 
@@ -138,7 +145,7 @@ def problems(allProblems: bool = False,
             for problemPath in problemPaths
         ]
 
-    with open(os.path.join(rootDirectory, 'problems.json'), 'r') as p:
+    with open(os.path.join(rootDirectory, PROBLEMS_JSON), 'r') as p:
         config = json.load(p)
 
     configProblems: List[Problem] = []
@@ -163,7 +170,7 @@ def problems(allProblems: bool = False,
     elif env.get('GITHUB_BASE_COMMIT'):
         commitRange = env['GITHUB_BASE_COMMIT'] + '...HEAD'
     else:
-        commitRange = 'origin/main...HEAD'
+        commitRange = DEFAULT_COMMIT_RANGE
 
     changes = subprocess.check_output(
         ['git', 'diff', '--name-only', '--diff-filter=AMDR', commitRange],

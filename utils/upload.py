@@ -14,6 +14,40 @@ import omegaup.api
 import problems
 
 
+# === Constants ===
+SETTINGS_JSON = 'settings.json'
+TESTPLAN_FILE = 'testplan'
+STATEMENTS_DIR = 'statements'
+SOLUTIONS_DIR = 'solutions'
+CASES_DIR = 'cases'
+EXAMPLES_DIR = 'examples'
+INTERACTIVE_DIR = 'interactive'
+VALIDATOR_PREFIX = 'validator'
+
+API_PROBLEM_DETAILS = '/api/problem/details/'
+API_PROBLEM_CREATE = '/api/problem/create/'
+API_PROBLEM_UPDATE = '/api/problem/update/'
+
+LANGUAGES_ALL = ','.join((
+    'c11-gcc',
+    'c11-clang',
+    'cpp11-gcc',
+    'cpp11-clang',
+    'cpp17-gcc',
+    'cpp17-clang',
+    'cs',
+    'hs',
+    'java',
+    'lua',
+    'pas',
+    'py2',
+    'py3',
+    'rb',
+))
+LANGUAGES_KAREL = 'kj,kp'
+LANGUAGES_NONE = ''
+
+
 def createProblemZip(problemConfig: Mapping[str, Any], problemPath: str,
                      zipPath: str) -> None:
     """Creates a problem .zip on the provided path."""
@@ -30,14 +64,14 @@ def createProblemZip(problemConfig: Mapping[str, Any], problemPath: str,
                 for f in filenames:
                     _addFile(os.path.join(root, f))
 
-        testplan = os.path.join(problemPath, 'testplan')
+        testplan = os.path.join(problemPath, TESTPLAN_FILE)
 
         if os.path.isfile(testplan):
             _addFile(testplan)
 
         if problemConfig['Validator']['Name'] == 'custom':
             validators = [
-                x for x in os.listdir(problemPath) if x.startswith('validator')
+                x for x in os.listdir(problemPath) if x.startswith(VALIDATOR_PREFIX)
             ]
 
             if not validators:
@@ -49,10 +83,10 @@ def createProblemZip(problemConfig: Mapping[str, Any], problemPath: str,
 
             _addFile(validator)
 
-        for directory in ('statements', 'solutions', 'cases'):
+        for directory in (STATEMENTS_DIR, SOLUTIONS_DIR, CASES_DIR):
             _recursiveAdd(directory)
 
-        for directory in ('examples', 'interactive'):
+        for directory in (EXAMPLES_DIR, INTERACTIVE_DIR):
             if not os.path.isdir(os.path.join(problemPath, directory)):
                 continue
             _recursiveAdd(directory)
@@ -70,21 +104,6 @@ def uploadProblemZip(client: omegaup.api.Client,
     payload = {
         'message': commitMessage,
         'problem_alias': alias,
-        # 'title': problemConfig['title'],
-        # 'source': problemConfig['source'],
-        # 'visibility': misc['visibility'],
-        # 'languages': misc['languages'],
-        # 'time_limit': limits['TimeLimit'],
-        # 'memory_limit': limits['MemoryLimit'] // 1024,
-        # 'input_limit': limits['InputLimit'],
-        # 'output_limit': limits['OutputLimit'],
-        # 'extra_wall_time': limits['ExtraWallTime'],
-        # 'overall_wall_time_limit': limits['OverallWallTimeLimit'],
-        # 'validator': validator['name'],
-        # 'validator_time_limit': validator['limits']['TimeLimit'],
-        # 'email_clarifications': misc['email_clarifications'],
-        # 'group_score_policy': misc.get('group_score_policy',
-        #                                'sum-if-not-zero'),
     }
 
     if misc:
@@ -122,40 +141,24 @@ def uploadProblemZip(client: omegaup.api.Client,
         if validator.get('validator') is None:
             payload['validator'] = validator.get('Name', 'default')
 
-    exists = client.query(
-        '/api/problem/details/',{'problem_alias': alias})['status'] == 'ok'
+    exists = client.query(API_PROBLEM_DETAILS, {'problem_alias': alias})['status'] == 'ok'
 
     if not exists:
         if not canCreate:
             raise Exception("Problem doesn't exist!")
         logging.info("Problem doesn't exist. Creating problem.")
-        endpoint = '/api/problem/create/'
+        endpoint = API_PROBLEM_CREATE
     else:
-        endpoint = '/api/problem/update/'
+        endpoint = API_PROBLEM_UPDATE
 
     languages = payload.get('languages', '')
 
     if languages == 'all':
-        payload['languages'] = ','.join((
-            'c11-gcc',
-            'c11-clang',
-            'cpp11-gcc',
-            'cpp11-clang',
-            'cpp17-gcc',
-            'cpp17-clang',
-            'cs',
-            'hs',
-            'java',
-            'lua',
-            'pas',
-            'py2',
-            'py3',
-            'rb',
-        ))
+        payload['languages'] = LANGUAGES_ALL
     elif languages == 'karel':
-        payload['languages'] = 'kj,kp'
+        payload['languages'] = LANGUAGES_KAREL
     elif languages == 'none':
-        payload['languages'] = ''
+        payload['languages'] = LANGUAGES_NONE
 
     with open(zipPath, 'rb') as f:
         files = {'problem_contents': f}
@@ -184,8 +187,6 @@ def uploadProblemZip(client: omegaup.api.Client,
                     course_alias=course_alias,
                     assignment_alias=assignment_alias,
                     problem_alias=alias,
-                    # commit=commit,
-                    # is_extra_problem=getattr(details, 'is_extra_problem', False),
                     points=getattr(details, 'points', 100.0),
                     check_=False
                 )
@@ -260,7 +261,7 @@ def uploadProblemZip(client: omegaup.api.Client,
         tagsToAdd = desiredTags - tags
 
         for tag in tagsToRemove:
-            if tag.startsWith('problemRestrictedTag'):
+            if tag.startswith('problemRestrictedTag'):
                 logging.info('Skipping restricted tag: %s', tag)
                 continue
             client.problem.removeTag(problem_alias=alias, name=tag)
@@ -292,7 +293,7 @@ def parse_limit_value(value):
 
 def uploadProblem(client: omegaup.api.Client, problemPath: str,
                   commitMessage: str, canCreate: bool) -> None:
-    with open(os.path.join(problemPath, 'settings.json'), 'r') as f:
+    with open(os.path.join(problemPath, SETTINGS_JSON), 'r') as f:
         problemConfig = json.load(f)
 
     logging.info('Uploading problem: %s', problemConfig['alias'])

@@ -1,0 +1,22 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+mypy = ">=0.782"
+pycodestyle = ">=2.6.0"
+
+
+[packages]
+
+libkarel = ">=1.0.2"
+omegaup = ">=1.3.0"
+
+
+[requires]
+
+python_version = "3.8"

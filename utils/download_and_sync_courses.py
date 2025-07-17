@@ -50,6 +50,7 @@ def sanitize_filename(name: str) -> str:
 def get_course_details(course_alias: str, course_base_folder: str) -> Dict[str, Any]:
     details = get_json("/api/course/details/", {"alias": course_alias})
     details.pop("assignments", None)
+    details.pop("clarifications", None)
 
     course_folder = os.path.join(course_base_folder, course_alias)
     os.makedirs(course_folder, exist_ok=True)

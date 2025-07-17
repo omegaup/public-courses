@@ -23,7 +23,7 @@ BASE_URL = None
 
 # 👇 Add your course aliases here
 COURSE_ALIASES = [
-    "Curso-de-Python-FutureLabs"
+    "ResolviendoProblemas2021"
 ]
 
 BASE_COURSE_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Courses"))
@@ -49,6 +49,8 @@ def sanitize_filename(name: str) -> str:
 
 def get_course_details(course_alias: str, course_base_folder: str) -> Dict[str, Any]:
     details = get_json("/api/course/details/", {"alias": course_alias})
+    details.pop("assignments", None)
+
     course_folder = os.path.join(course_base_folder, course_alias)
     os.makedirs(course_folder, exist_ok=True)
 
@@ -71,7 +73,7 @@ def get_assignment_details(course_alias: str, assignment_alias: str):
     })
 
 
-def download_and_unzip(problem_alias: str, assignment_folder: str):
+def download_and_unzip(problem_alias: str, assignment_folder: str) -> bool:
     try:
         download_url = urljoin(BASE_URL, f"/api/problem/download/problem_alias/{problem_alias}/")
         parsed_url = urlparse(download_url)
@@ -89,12 +91,12 @@ def download_and_unzip(problem_alias: str, assignment_folder: str):
                 f"⚠️  Problem '{problem_alias}' not found or access denied (404). "
                 f"Response body:\n{response_body.decode(errors='ignore')}"
             )
-            return
+            return False
         elif response.status != 200:
             response_body = response.read()
             LOG.error(f"❌ Failed to download '{problem_alias}'. HTTP status: {response.status}")
             LOG.error(f"❌ Response body:\n{response_body.decode(errors='ignore')}")
-            return
+            return False
 
         problem_folder = os.path.join(assignment_folder, sanitize_filename(problem_alias))
         os.makedirs(problem_folder, exist_ok=True)
@@ -114,7 +116,7 @@ def download_and_unzip(problem_alias: str, assignment_folder: str):
             LOG.info(f"✅ Extracted: {problem_alias} → {problem_folder}")
         except zipfile.BadZipFile:
             LOG.error(f"❌ Failed to unzip: {zip_path}")
-            return
+            return False
 
         settings_path = os.path.join(problem_folder, "settings.json")
         if os.path.exists(settings_path):
@@ -132,8 +134,11 @@ def download_and_unzip(problem_alias: str, assignment_folder: str):
         else:
             LOG.warning(f"⚠️  No settings.json found for '{problem_alias}'")
 
+        return True
+
     except Exception as e:
         LOG.error(f"❌ Failed to download '{problem_alias}': {e}")
+        return False
 
 
 def main():
@@ -170,20 +175,22 @@ def main():
                     assignment_folder = os.path.join(course_folder, assignment_alias)
                     os.makedirs(assignment_folder, exist_ok=True)
 
-                    assignment_settings_path = os.path.join(assignment_folder, "assignment_settings.json")
-                    with open(assignment_settings_path, "w", encoding="utf-8") as f:
-                        json.dump(details, f, indent=2, ensure_ascii=False)
+                    # assignment_settings_path = os.path.join(assignment_folder, "assignment_settings.json")
+                    # with open(assignment_settings_path, "w", encoding="utf-8") as f:
+                    #     json.dump(details, f, indent=2, ensure_ascii=False)
 
                     problems = details.get("problems", [])
 
                     for problem in problems:
                         try:
-                            download_and_unzip(problem["alias"], assignment_folder)
-                            rel_path = os.path.join(
-                                "Courses", course_alias, assignment_alias, sanitize_filename(problem["alias"])
-                            )
-                            LOG.info(f"📂 Added problem path: {rel_path}")
-                            all_problems.append({"path": rel_path})
+                            if download_and_unzip(problem["alias"], assignment_folder):
+                                rel_path = os.path.join(
+                                    "Courses", course_alias, assignment_alias, sanitize_filename(problem["alias"])
+                                )
+                                LOG.info(f"📂 Added problem path: {rel_path}")
+                                all_problems.append({"path": rel_path})
+                            else:
+                                LOG.warning(f"⚠️  Skipped adding '{problem['alias']}' due to download failure.")
                         except Exception as e:
                             LOG.error(f"❌ Error while processing problem '{problem['alias']}': {e}")
 

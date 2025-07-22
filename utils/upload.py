@@ -370,9 +370,7 @@ def _main() -> None:
                         level=logging.DEBUG if args.verbose else logging.INFO)
     logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-    client = omegaup.api.Client(username=args.username,
-                                password=args.password,
-                                api_token=args.api_token,
+    client = omegaup.api.Client(api_token=args.api_token,
                                 url=args.url)
 
     if env.get('GITHUB_ACTIONS'):

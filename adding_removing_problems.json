@@ -1,17 +1,5 @@
 {
     "add_problem":[
-        {
-            "course_alias": "omi-public-course",
-            "assignment_alias": "intro",
-            "problem_alias": "demo-de-objetivo",
-            "points": 100
-        },
-        {
-            "course_alias": "omi-public-course",
-            "assignment_alias": "practice",
-            "problem_alias": "Contest-Start",
-            "points": 100
-        }
     ],
     "remove_problem":[
     ]

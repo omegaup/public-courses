@@ -1,0 +1,55 @@
+name: Modify Course Assignments
+
+on:
+  push:
+    branches: [modify-assignments]
+  pull_request:
+    branches: [modify-assignments]
+
+env:
+  OMEGAUP_API_TOKEN: ${{ secrets.OMEGAUP_API_TOKEN }}
+  GIT_USERNAME: ${{ github.actor }}
+
+jobs:
+  modify-course-assignments:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository with PR branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.8'
+
+    - name: Set up pipenv
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv==2023.11.15
+
+    - name: Install Python dependencies with pipenv
+      run: |
+        cd utils
+        pipenv install
+
+    - name: Run course download script
+      working-directory: utils
+      run: pipenv run python3 update_assignment_problems.py
+
+    - name: Commit and push changes
+      id: commit
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add .
+        # Only commit if there are changes
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "📝 Auto-sync: Downloaded latest OmegaUp content"
+          git push
+        fi

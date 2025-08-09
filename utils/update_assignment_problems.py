@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import datetime
-from typing import Dict, Any, List, NamedTuple
+from typing import Dict, Any, List, NamedTuple, Tuple
 import omegaup.api
 import re
 from urllib.parse import urlparse, urljoin
@@ -35,7 +35,7 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r'[^a-zA-Z0-9_\-\.]', '_', name)
 
 
-def handle_input() -> tuple[str, str, str]:
+def handle_input() -> Tuple[str, str, str]:
     parser = argparse.ArgumentParser(description="Add or remove problems from course assignments.")
     parser.add_argument("--url", default="https://omegaup.com", help="omegaUp base URL")
     parser.add_argument("--api-token", type=str, default=os.environ.get("OMEGAUP_API_TOKEN"), 

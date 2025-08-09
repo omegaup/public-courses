@@ -43,7 +43,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
@@ -60,7 +60,7 @@ jobs:
             --diagnostics-output=github \
             validate --all; then
             echo "❌ Lint errors detected."
-            echo "💡 Please run the following locally to fix them:"
+            echo "Please run the following locally to fix them:"
             echo ""
             echo "    ./utils/lint fix --all"
             echo "    git commit -am 'Fix lints'"

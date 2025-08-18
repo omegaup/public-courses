@@ -10,8 +10,12 @@ import os
 import re
 import sys
 import subprocess
+import logging
 from pathlib import Path
 from typing import List
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+LOG = logging.getLogger(__name__)
 
 
 def get_changed_files(repo_root: str) -> List[str]:
@@ -37,7 +41,7 @@ def get_changed_files(repo_root: str) -> List[str]:
             universal_newlines=True)
         return changes.splitlines()
     except subprocess.CalledProcessError as e:
-        print(f"❌ Failed to get git diff: {e}")
+        LOG.error(f"Failed to get git diff: {e}")
         return []
 
 
@@ -71,7 +75,7 @@ def validate_markdown_files(problem_path: str, problem_title: str) -> List[str]:
     return errors
 
 
-def validate_image_references(problem_path: str, problem_title: str) -> List[str]:
+def validate_image_references(repo_root: str, problem_path: str, problem_title: str) -> List[str]:
     """Check if image references in Markdown files point to existing files."""
     errors = []
     
@@ -80,12 +84,12 @@ def validate_image_references(problem_path: str, problem_title: str) -> List[str
         for file in files:
             if file.endswith('.markdown') or file.endswith('.md'):
                 markdown_file = os.path.join(root, file)
-                errors.extend(_check_file_images(markdown_file, problem_title))
+                errors.extend(_check_file_images(repo_root, markdown_file, problem_title))
     
     return errors
 
 
-def _check_file_images(markdown_file: str, problem_title: str) -> List[str]:
+def _check_file_images(repo_root: str, markdown_file: str, problem_title: str) -> List[str]:
     """Check image references in a single Markdown file."""
     errors = []
     
@@ -125,29 +129,27 @@ def _check_file_images(markdown_file: str, problem_title: str) -> List[str]:
 
 def main():
     """Main validation function."""
-    global repo_root  # Needed for _check_file_images
-    
     try:
         # Get repository root (assuming script is in utils/ directory)
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        print(f"Repository root: {repo_root}")
+        LOG.info(f"Repository root: {repo_root}")
         
         # Get changed files
         changed_files = get_changed_files(repo_root)
-        print(f"\nFound {len(changed_files)} changed files in git diff")
+        LOG.info(f"\nFound {len(changed_files)} changed files in git diff")
         
         # Load problems from problems.json
         problems = load_problems_from_json(repo_root)
-        print(f"Found {len(problems)} problems in problems.json")
+        LOG.info(f"Found {len(problems)} problems in problems.json")
         
         if not problems:
-            print("❌ No problems found in problems.json")
+            LOG.error("❌ No problems found in problems.json")
             sys.exit(1)
         
         all_errors = []
         checked_problems = 0
         
-        print("\n🔍 Validating changed problems...")
+        LOG.info("\n🔍 Validating changed problems...")
         
         # Validate each problem if it has changes
         for problem in problems:
@@ -157,53 +159,53 @@ def main():
             
             # Check if this problem has any changes
             if not any(f.startswith(problem_path) for f in changed_files):
-                print(f"\n⏩ Skipping problem: {problem_title} (no changes)")
+                LOG.info(f"\n⏩ Skipping problem: {problem_title} (no changes)")
                 continue
                 
             checked_problems += 1
-            print(f"\n📝 Checking problem: {problem_title}")
-            print(f"   Path: {problem_path}")
-            print(f"   Full path: {full_problem_path}")
+            LOG.info(f"\n📝 Checking problem: {problem_title}")
+            LOG.info(f"   Path: {problem_path}")
+            LOG.info(f"   Full path: {full_problem_path}")
             
             if not os.path.exists(full_problem_path):
                 error_msg = f"Problem path does not exist: {full_problem_path}"
-                print(f"   ❌ {error_msg}")
+                LOG.error(f"   ❌ {error_msg}")
                 all_errors.append(error_msg)
                 continue
             
             # Check Markdown files
             markdown_errors = validate_markdown_files(full_problem_path, problem_title)
             if markdown_errors:
-                print("   Missing files:")
+                LOG.info("   Missing files:")
                 for error in markdown_errors:
-                    print(f"      ❌ {error}")
+                    LOG.error(f"      ❌ {error}")
             all_errors.extend(markdown_errors)
             
             # Check image references
-            image_errors = validate_image_references(full_problem_path, problem_title)
+            image_errors = validate_image_references(repo_root, full_problem_path, problem_title)
             if image_errors:
-                print("   Image issues:")
+                LOG.info("   Image issues:")
                 for error in image_errors:
-                    print(f"      ❌ {error}")
+                    LOG.error(f"      ❌ {error}")
             all_errors.extend(image_errors)
             
             if not markdown_errors and not image_errors:
-                print("   ✅ No issues found")
+                LOG.info("   ✅ No issues found")
         
         # Report final results
         if all_errors:
-            print("\n❌ Validation summary:")
-            print(f"Found {len(all_errors)} error(s) in {checked_problems} changed problem(s):")
+            LOG.error("\n❌ Validation summary:")
+            LOG.info(f"Found {len(all_errors)} error(s) in {checked_problems} changed problem(s):")
             for error in all_errors:
-                print(f"   • {error}")
+                LOG.info(f"   • {error}")
             sys.exit(1)
         else:
-            print("\n✅ All validations passed!")
-            print(f"   📊 Checked {checked_problems} changed problem(s)")
+            LOG.info("\n✅ All validations passed!")
+            LOG.info(f"   📊 Checked {checked_problems} changed problem(s)")
             sys.exit(0)
             
     except Exception as e:
-        print(f"❌ Validation failed: {str(e)}", file=sys.stderr)
+        LOG.error(f"❌ Validation failed: {str(e)}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         sys.exit(1)

@@ -116,6 +116,16 @@ jobs:
         with:
           name: omegaUp-CI-logs
           path: results.zip
+        
+      # - name: Notify Slack on failure
+        #   uses: 8398a7/action-slack@v3
+        #   with:
+        #     status: ${{ job.status }}
+        #     fields: repo,message,commit,author,action,eventName,ref,workflow
+        #   env:
+        #     GITHUB_TOKEN: ${{ github.token }}
+        #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        #   if: ${{ failure() && github.ref == 'refs/heads/main' }}
 
   validate-content:
     runs-on: ubuntu-latest

@@ -27,14 +27,23 @@ COURSE_ALIASES = [
     "omi-public-course"
 ]
 
-BASE_COURSE_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Courses"))
+BASE_COURSE_FOLDER = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "Courses"))
 
 
 def handle_input():
     global BASE_URL, API_TOKEN
-    parser = argparse.ArgumentParser(description="Download and extract problems from multiple course assignments")
-    parser.add_argument("--url", default="https://omegaup.com", help="omegaUp base URL")
-    parser.add_argument("--api-token", type=str, default=os.environ.get("OMEGAUP_API_TOKEN"), required=("OMEGAUP_API_TOKEN" not in os.environ))
+    parser = argparse.ArgumentParser(
+        description=f"Download and extract problems from multiple course"
+                    f" assignments"
+    )
+    parser.add_argument("--url",
+                        default="https://omegaup.com",
+                        help="omegaUp base URL")
+    parser.add_argument("--api-token",
+                        type=str,
+                        default=os.environ.get("OMEGAUP_API_TOKEN"),
+                        required=("OMEGAUP_API_TOKEN" not in os.environ))
     args = parser.parse_args()
     BASE_URL = args.url
     return args.api_token
@@ -48,7 +57,10 @@ def sanitize_filename(name: str) -> str:
     return "".join(c for c in name if c.isalnum() or c in " -_").strip()
 
 
-def get_course_details(course_alias: str, course_base_folder: str) -> Dict[str, Any]:
+def get_course_details(
+        course_alias: str,
+        course_base_folder: str
+) -> Dict[str, Any]:
     details = get_json("/api/course/details/", {"alias": course_alias})
     details.pop("assignments", None)
     details.pop("clarifications", None)
@@ -65,7 +77,8 @@ def get_course_details(course_alias: str, course_base_folder: str) -> Dict[str, 
 
 
 def get_assignments(course_alias: str):
-    return get_json("/api/course/listAssignments/", {"course_alias": course_alias})["assignments"]
+    return get_json("/api/course/listAssignments/",
+                    {"course_alias": course_alias})["assignments"]
 
 
 def get_assignment_details(course_alias: str, assignment_alias: str):
@@ -77,9 +90,13 @@ def get_assignment_details(course_alias: str, assignment_alias: str):
 
 def download_and_unzip(problem_alias: str, assignment_folder: str) -> bool:
     try:
-        download_url = urljoin(BASE_URL, f"/api/problem/download/problem_alias/{problem_alias}/")
+        download_url = urljoin(
+            BASE_URL,
+            f"/api/problem/download/problem_alias/{problem_alias}/"
+        )
         parsed_url = urlparse(download_url)
-        conn = http.client.HTTPSConnection(parsed_url.hostname, context=context)
+        conn = http.client.HTTPSConnection(parsed_url.hostname,
+                                           context=context)
 
         headers = {'Authorization': f'token {API_CLIENT.api_token}'}
         path = parsed_url.path
@@ -90,17 +107,24 @@ def download_and_unzip(problem_alias: str, assignment_folder: str) -> bool:
         if response.status == 404:
             response_body = response.read()
             LOG.warning(
-                f"⚠️  Problem '{problem_alias}' not found or access denied (404). "
-                f"Response body:\n{response_body.decode(errors='ignore')}"
+                f"⚠️  Problem '{problem_alias}' not found or access denied "
+                f"(404). Response body:\n"
+                f"{response_body.decode(errors='ignore')}"
             )
             return False
         elif response.status != 200:
             response_body = response.read()
-            LOG.error(f"❌ Failed to download '{problem_alias}'. HTTP status: {response.status}")
-            LOG.error(f"❌ Response body:\n{response_body.decode(errors='ignore')}")
+            LOG.error(
+                f"❌ Failed to download '{problem_alias}'. HTTP status: "
+                f"{response.status}"
+            )
+            LOG.error(
+                f"❌ Response body:\n{response_body.decode(errors='ignore')}"
+            )
             return False
 
-        problem_folder = os.path.join(assignment_folder, sanitize_filename(problem_alias))
+        problem_folder = os.path.join(assignment_folder,
+                                      sanitize_filename(problem_alias))
         os.makedirs(problem_folder, exist_ok=True)
 
         zip_path = os.path.join(problem_folder, f"{problem_alias}.zip")
@@ -130,9 +154,13 @@ def download_and_unzip(problem_alias: str, assignment_folder: str) -> bool:
                     f.seek(0)
                     json.dump(settings, f, indent=2, ensure_ascii=False)
                     f.truncate()
-                LOG.info(f"🛠️  Updated settings.json with alias: {problem_alias}")
+                LOG.info(
+                    f"🛠️  Updated settings.json with alias: {problem_alias}")
             except Exception as e:
-                LOG.warning(f"⚠️  Failed to update settings.json for '{problem_alias}': {e}")
+                LOG.warning(
+                    f"⚠️  Failed to update settings.json for "
+                    f"'{problem_alias}': {e}"
+                )
         else:
             LOG.warning(f"⚠️  No settings.json found for '{problem_alias}'")
 
@@ -158,7 +186,6 @@ def main():
     for course_alias in COURSE_ALIASES:
         LOG.info(f"📘 Starting course: {course_alias}")
         try:
-            course_details = get_course_details(course_alias, BASE_COURSE_FOLDER)
             assignments = get_assignments(course_alias)
 
             if not assignments:
@@ -170,40 +197,55 @@ def main():
             for assignment in assignments:
                 assignment_alias = assignment["alias"]
                 assignment_name = assignment["name"]
-                LOG.info(f"📂 Processing assignment: {assignment_name} ({assignment_alias})")
+                LOG.info(
+                    f"📂 Processing assignment: {assignment_name} "
+                    f"({assignment_alias})"
+                )
 
                 try:
-                    details = get_assignment_details(course_alias, assignment_alias)
-                    assignment_folder = os.path.join(course_folder, assignment_alias)
+                    details = get_assignment_details(course_alias,
+                                                     assignment_alias)
+                    assignment_folder = os.path.join(course_folder,
+                                                     assignment_alias)
                     os.makedirs(assignment_folder, exist_ok=True)
-
-                    # assignment_settings_path = os.path.join(assignment_folder, "assignment_settings.json")
-                    # with open(assignment_settings_path, "w", encoding="utf-8") as f:
-                    #     json.dump(details, f, indent=2, ensure_ascii=False)
 
                     problems = details.get("problems", [])
 
                     for problem in problems:
                         try:
-                            if download_and_unzip(problem["alias"], assignment_folder):
+                            downloaded = download_and_unzip(problem["alias"],
+                                                            assignment_folder)
+                            if downloaded:
                                 rel_path = os.path.join(
-                                    "Courses", course_alias, assignment_alias, sanitize_filename(problem["alias"])
+                                    "Courses",
+                                    course_alias,
+                                    assignment_alias,
+                                    sanitize_filename(problem["alias"])
                                 )
                                 LOG.info(f"📂 Added problem path: {rel_path}")
                                 all_problems.append({"path": rel_path})
                             else:
-                                LOG.warning(f"⚠️  Skipped adding '{problem['alias']}' due to download failure.")
+                                LOG.warning(
+                                    f"⚠️  Skipped adding '{problem['alias']}' "
+                                    f"due to download failure.")
                         except Exception as e:
-                            LOG.error(f"❌ Error while processing problem '{problem['alias']}': {e}")
+                            LOG.error(
+                                f"❌ Error while processing problem "
+                                f"'{problem['alias']}': {e}"
+                            )
 
                 except Exception as e:
-                    LOG.error(f"❌ Failed to process assignment '{assignment_alias}': {e}")
+                    LOG.error(
+                        f"❌ Failed to process assignment "
+                        f"'{assignment_alias}': {e}"
+                    )
 
         except Exception as e:
             LOG.error(f"❌ Failed to process course '{course_alias}': {e}")
 
     # ✅ Write problems.json
-    problems_json_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "problems.json"))
+    problems_json_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "problems.json"))
     with open(problems_json_path, "w", encoding="utf-8") as f:
         LOG.info(f"Writing problems.json to {problems_json_path}")
         json.dump({"problems": all_problems}, f, indent=2, ensure_ascii=False)

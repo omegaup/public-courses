@@ -71,7 +71,9 @@ def createProblemZip(problemConfig: Mapping[str, Any], problemPath: str,
 
         if problemConfig['Validator']['Name'] == 'custom':
             validators = [
-                x for x in os.listdir(problemPath) if x.startswith(VALIDATOR_PREFIX)
+                x
+                for x in os.listdir(problemPath)
+                if x.startswith(VALIDATOR_PREFIX)
             ]
 
             if not validators:
@@ -112,9 +114,11 @@ def uploadProblemZip(client: omegaup.api.Client,
         if misc.get('languages') is not None:
             payload['languages'] = misc['languages']
         if misc.get('email_clarifications') is not None:
-            payload['email_clarifications'] = misc.get('email_clarifications', 0)
+            payload['email_clarifications'] = misc.get('email_clarifications',
+                                                       0)
         if misc.get('group_score_policy') is not None:
-            payload['group_score_policy'] = misc.get('group_score_policy', 'sum-if-not-zero'),
+            payload['group_score_policy'] = misc.get('group_score_policy',
+                                                     'sum-if-not-zero'),
 
     if limits:
         time_limit = limits.get('TimeLimit')
@@ -133,15 +137,19 @@ def uploadProblemZip(client: omegaup.api.Client,
         if extra_wall_time is not None:
             payload['extra_wall_time'] = parse_limit_value(extra_wall_time)
         overall_wall_time = limits.get('OverallWallTimeLimit')
-        payload['overall_wall_time_limit'] = (
-            parse_limit_value(overall_wall_time) if overall_wall_time is not None else 0
-        )
+        payload['overall_wall_time_limit'] = 0
+        if overall_wall_time is not None:
+            payload['overall_wall_time_limit'] = parse_limit_value(
+                overall_wall_time)
 
     if validator:
         if validator.get('validator') is None:
             payload['validator'] = validator.get('Name', 'default')
 
-    exists = client.query(API_PROBLEM_DETAILS, {'problem_alias': alias})['status'] == 'ok'
+    exists = client.query(
+        API_PROBLEM_DETAILS,
+        {'problem_alias': alias}
+    )['status'] == 'ok'
 
     if not exists:
         if not canCreate:
@@ -180,7 +188,8 @@ def uploadProblemZip(client: omegaup.api.Client,
                 commit = getattr(versions, 'published', '')
 
                 if not commit:
-                    logging.warning("No commit found in versions: %s", versions)
+                    logging.warning(
+                        "No commit found in versions: %s", versions)
                     commit = ''
 
                 client.course.addProblem(
@@ -191,14 +200,18 @@ def uploadProblemZip(client: omegaup.api.Client,
                     check_=False
                 )
                 logging.info(
-                    "Successfully added problem %s to course %s, assignment %s",
-                    alias, course_alias, assignment_alias)
+                    "Successfully added problem %s to course %s, "
+                    "assignment %s", alias, course_alias, assignment_alias
+                )
 
             except Exception as e:
                 logging.warning("Could not add problem to assignment: %s", e)
         else:
             logging.info(
-                "No course information found, problem %s uploaded successfully", alias)
+                "No course information found, "
+                "problem %s uploaded successfully",
+                alias
+            )
 
     targetAdmins = misc.get('admins', [])
     targetAdminGroups = misc.get('admin-groups', [])

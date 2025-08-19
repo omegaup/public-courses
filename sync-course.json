@@ -1,9 +1,9 @@
 {
-    "requests":[
-        {
-            "omegaup_usernmae": "",
-            "github_username": "",
-            "requests_number": 0
-        }
-    ]
+  "requests": [
+    {
+      "omegaup_usernmae": "",
+      "github_username": "",
+      "requests_number": 0
+    }
+  ]
 }

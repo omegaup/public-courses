@@ -46,7 +46,7 @@
   "Slow": false,
   "Validator": {
     "Name": "token-numeric",
-    "Tolerance": 1e-09,
+    "Tolerance": 1e-9,
     "GroupScorePolicy": "sum-if-not-zero"
   },
   "alias": "New-Test-1",

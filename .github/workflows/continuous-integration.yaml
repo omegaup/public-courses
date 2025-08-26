@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  OMEGAUPUSER: ${{ secrets.OMEGAUPUSER }}
+  OMEGAUPUSER: iqbal6602
   OMEGAUP_API_TOKEN: ${{ secrets.OMEGAUP_API_TOKEN }}
   GIT_USERNAME: ${{ github.actor }}
   GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}

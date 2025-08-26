@@ -10,7 +10,7 @@
   "Slow": false,
   "Validator": {
     "Name": "token-caseless",
-    "Tolerance": 1e-09,
+    "Tolerance": 1e-9,
     "GroupScorePolicy": "sum-if-not-zero"
   },
   "alias": "demo-de-objetivo",

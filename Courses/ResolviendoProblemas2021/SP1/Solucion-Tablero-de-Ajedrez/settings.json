@@ -10,7 +10,7 @@
   "Slow": false,
   "Validator": {
     "Name": "token",
-    "Tolerance": 1e-09
+    "Tolerance": 1e-9
   },
   "alias": "Solucion-Tablero-de-Ajedrez",
   "title": "Solucion-Tablero-de-Ajedrez"

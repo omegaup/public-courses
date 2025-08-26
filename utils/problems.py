@@ -28,9 +28,13 @@ class Problem(NamedTuple):
             with open(settings_path) as f:
                 problemConfig = json.load(f)
         except FileNotFoundError:
-            raise FileNotFoundError(f"{SETTINGS_JSON} not found at: {settings_path}")
+            raise FileNotFoundError(
+                f"{SETTINGS_JSON} not found at: {settings_path}")
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format in {SETTINGS_JSON} at: {settings_path}. Error: {e}")
+            raise ValueError(
+                f"Invalid JSON format in {SETTINGS_JSON} at: {settings_path}. "
+                f"Error: {e}"
+            )
 
         return Problem(path=problemPath,
                        title=problemConfig['title'],
@@ -65,7 +69,8 @@ def repositoryRoot() -> str:
         ], universal_newlines=True)
         return output.strip().split()[0]
     except subprocess.CalledProcessError:
-        raise RuntimeError("Failed to find Git repository root: not inside a Git repo.")
+        raise RuntimeError(
+            "Failed to find Git repository root: not inside a Git repo.")
     except FileNotFoundError:
         raise RuntimeError("Git is not installed or not found in PATH.")
 

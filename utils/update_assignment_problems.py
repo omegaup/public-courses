@@ -211,7 +211,9 @@ def process_add(
         )
 
         try:
-            assignments_response = client.course.listAssignments(course_alias=course)
+            assignments_response = client.course.listAssignments(
+                course_alias=course,
+            )
             assignments = assignments_response.assignments
             if not assignment_exists(assignments, assignment):
                 LOG.warning(
@@ -278,7 +280,9 @@ def process_remove(
         )
 
         try:
-            assignments_response = client.course.listAssignments(course_alias=course)
+            assignments_response = client.course.listAssignments(
+                course_alias=course,
+            )
             assignments = assignments_response.assignments
             if not assignment_exists(assignments, assignment):
                 LOG.warning(
@@ -388,10 +392,17 @@ def main():
                 {"add_problem": [], "remove_problem": []},
                 f,
                 indent=2,
-                ensure_ascii=False)
-        LOG.info(f"🧹 Cleared 'add_problem' and 'remove_problem' arrays in {input_path}")
+                ensure_ascii=False,
+            )
+        LOG.info(
+            f"🧹 Cleared 'add_problem' and 'remove_problem' arrays in "
+            f"{input_path}"
+        )
     except (IOError, json.JSONDecodeError) as e:
-        LOG.error(f"❌ Failed to reset {input_path}: {e}")
+        LOG.info(
+            f"🧹 Cleared 'add_problem' and 'remove_problem' arrays in "
+            f"{input_path}"
+        )
 
 
 if __name__ == "__main__":

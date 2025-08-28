@@ -67,8 +67,8 @@ def handle_input() -> Tuple[str, str, str]:
     return args.api_token, args.url, args.input
 
 
-def assignment_exists(assignments: List[Dict[str, Any]], alias: str) -> bool:
-    return any(a["alias"] == alias for a in assignments)
+def assignment_exists(assignments: List[Any], alias: str) -> bool:
+    return any(a.alias == alias for a in assignments)
 
 
 def create_assignment(
@@ -211,8 +211,8 @@ def process_add(
         )
 
         try:
-            assignments = client.course.listAssignments(
-                course_alias=course).get("assignments", [])
+            assignments_response = client.course.listAssignments(course_alias=course)
+            assignments = assignments_response.assignments
             if not assignment_exists(assignments, assignment):
                 LOG.warning(
                     f"📂 Assignment '{assignment}' not found in course "
@@ -278,8 +278,8 @@ def process_remove(
         )
 
         try:
-            assignments = client.course.listAssignments(
-                course_alias=course).get("assignments", [])
+            assignments_response = client.course.listAssignments(course_alias=course)
+            assignments = assignments_response.assignments
             if not assignment_exists(assignments, assignment):
                 LOG.warning(
                     f"⚠️ Assignment '{assignment}' not found in course "
@@ -389,8 +389,7 @@ def main():
                 f,
                 indent=2,
                 ensure_ascii=False)
-        LOG.info(f"🧹 Cleared 'add_problem' and 'remove_problem' arrays in {
-            input_path}")
+        LOG.info(f"🧹 Cleared 'add_problem' and 'remove_problem' arrays in {input_path}")
     except (IOError, json.JSONDecodeError) as e:
         LOG.error(f"❌ Failed to reset {input_path}: {e}")
 

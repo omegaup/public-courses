@@ -5,8 +5,9 @@ import json
 import logging
 import os
 import datetime
-from typing import Dict, Any, List, NamedTuple, Tuple
+from typing import Dict, Any, List, NamedTuple, Sequence, Tuple
 import omegaup.api
+from omegaup.api import _CourseAssignment
 import re
 from urllib.parse import urlparse, urljoin
 import shutil
@@ -67,7 +68,10 @@ def handle_input() -> Tuple[str, str, str]:
     return args.api_token, args.url, args.input
 
 
-def assignment_exists(assignments: List[Any], alias: str) -> bool:
+def assignment_exists(
+        assignments: Sequence[_CourseAssignment],
+        alias: str
+) -> bool:
     return any(a.alias == alias for a in assignments)
 
 
@@ -91,8 +95,8 @@ def create_assignment(
             assignment_type="homework",
             name=assignment_alias,
             description=f"Auto-created assignment {assignment_alias}",
-            start_time=int(now.timestamp()),
-            finish_time=int(finish.timestamp()),
+            start_time=now,
+            finish_time=finish,
             unlimited_duration=True
         )
         LOG.info(f"✅ Created assignment '{assignment_alias}'")
@@ -112,6 +116,10 @@ def download_and_unzip(
             f"/api/problem/download/problem_alias/{problem_alias}/"
         )
         parsed_url = urlparse(download_url)
+        if parsed_url.hostname is None:
+            LOG.error(f"Invalid download URL (missing hostname): "
+                      f"{download_url}")
+            return False
         conn = http.client.HTTPSConnection(parsed_url.hostname,
                                            context=context)
 
@@ -191,10 +199,10 @@ def download_and_unzip(
 
 def process_add(
         data: Dict[str, Any],
-        problems_data: Dict[str, List[Dict[str, str]]],
+        problems_data: Dict[str, List[ProblemEntry]],
         client: omegaup.api.Client,
         base_url: str
-):
+) -> None:
     for item in data.get("add_problem", []):
         course = item["course_alias"]
         assignment = item["assignment_alias"]
@@ -238,6 +246,11 @@ def process_add(
             os.makedirs(assignment_folder, exist_ok=True)
 
             LOG.info(f"📥 Downloading and unzipping problem '{problem}'")
+
+            if client.api_token is None:
+                LOG.error("❌ API token is required.")
+                return
+
             success = download_and_unzip(
                 problem_alias=problem,
                 assignment_folder=assignment_folder,
@@ -262,9 +275,9 @@ def process_add(
 
 def process_remove(
        data: Dict[str, Any],
-       problems_data: Dict[str, List[Dict[str, str]]],
+       problems_data: Dict[str, List[ProblemEntry]],
        client: omegaup.api.Client
-):
+) -> None:
     for item in data.get("remove_problem", []):
         course = item["course_alias"]
         assignment = item["assignment_alias"]
@@ -342,7 +355,9 @@ def load_problems_json() -> Dict[str, List[ProblemEntry]]:
     return {"problems": []}
 
 
-def save_problems_json(data: Dict[str, List[ProblemEntry]]):
+def save_problems_json(data: Dict[str, List[ProblemEntry]]) -> None:
+    """Saves the problems data to the problems.json file."""
+
     with open(PROBLEMS_JSON_PATH, "w", encoding="utf-8") as f:
         json.dump(
             {"problems": [p._asdict() for p in data["problems"]]},
@@ -352,15 +367,19 @@ def save_problems_json(data: Dict[str, List[ProblemEntry]]):
 
 
 def add_problem_to_json(course: str, assignment: str, problem: str,
-                        problems_data: Dict[str, List[ProblemEntry]]):
+                        problems_data: Dict[str, List[ProblemEntry]]) -> None:
     path = f"Courses/{course}/{assignment}/{problem}"
     if not any(p.path == path for p in problems_data["problems"]):
         problems_data["problems"].append(ProblemEntry(path=path))
         LOG.info(f"📝 Added '{path}' to problems.json")
 
 
-def remove_problem_from_json(course: str, assignment: str, problem: str,
-                             problems_data: Dict[str, List[ProblemEntry]]):
+def remove_problem_from_json(
+        course: str,
+        assignment: str,
+        problem: str,
+        problems_data: Dict[str, List[ProblemEntry]]
+) -> None:
     path = f"Courses/{course}/{assignment}/{problem}"
     before = len(problems_data["problems"])
     problems_data["problems"] = [
@@ -370,7 +389,7 @@ def remove_problem_from_json(course: str, assignment: str, problem: str,
         LOG.info(f"🗑️  Removed '{path}' from problems.json")
 
 
-def main():
+def main() -> None:
     api_token, base_url, input_path = handle_input()
     client = omegaup.api.Client(api_token=api_token, url=base_url)
 
@@ -401,7 +420,7 @@ def main():
     except (IOError, json.JSONDecodeError) as e:
         LOG.info(
             f"🧹 Cleared 'add_problem' and 'remove_problem' arrays in "
-            f"{input_path}"
+            f"{input_path}: {e}"
         )
 
 

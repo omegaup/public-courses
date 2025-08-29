@@ -5,7 +5,7 @@ import subprocess
 import os.path
 
 from types import TracebackType
-from typing import AnyStr, Iterator, IO, Optional, Type, Sequence
+from typing import Iterator, IO, Optional, Type, Sequence
 
 import problems
 
@@ -16,7 +16,7 @@ _LANGUAGE_MAPPING = {
 
 @contextlib.contextmanager
 def _maybe_open(path: Optional[str],
-                mode: str) -> Iterator[Optional[IO[AnyStr]]]:
+                mode: str) -> Iterator[Optional[IO[str]]]:
     """A contextmanager that can open a file, or return None.
 
     This is useful to provide arguments to subprocess.call() and its friends.

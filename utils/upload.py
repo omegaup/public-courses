@@ -126,7 +126,7 @@ def uploadProblemZip(client: omegaup.api.Client,
             payload['time_limit'] = parse_limit_value(time_limit)
         memory_limit = limits.get('MemoryLimit')
         if memory_limit is not None:
-            payload['memory_limit'] = parse_limit_value(memory_limit) // 1024
+            payload['memory_limit'] = parse_limit_value(memory_limit)  # 1024
         input_limit = limits.get('InputLimit')
         if input_limit is not None:
             payload['input_limit'] = parse_limit_value(input_limit)
@@ -222,8 +222,8 @@ def uploadProblemZip(client: omegaup.api.Client,
 
     if targetAdmins and allAdmins:
         admins = {
-            a['username'].lower()
-            for a in allAdmins['admins'] if a['role'] == 'admin'
+            a.username.lower()
+            for a in allAdmins.admins if a.role == 'admin'
         }
 
         desiredAdmins = {admin.lower() for admin in targetAdmins}
@@ -245,8 +245,8 @@ def uploadProblemZip(client: omegaup.api.Client,
 
     if targetAdminGroups and allAdmins:
         adminGroups = {
-            a['alias'].lower()
-            for a in allAdmins['group_admins'] if a['role'] == 'admin'
+            a.alias.lower()
+            for a in allAdmins.group_admins if a.role == 'admin'
         }
 
         desiredGroups = {group.lower() for group in targetAdminGroups}
@@ -264,8 +264,8 @@ def uploadProblemZip(client: omegaup.api.Client,
 
     if 'tags' in misc:
         tags = {
-            t['name'].lower()
-            for t in client.problem.tags(problem_alias=alias)['tags']
+            t.name.lower()
+            for t in client.problem.tags(problem_alias=alias).tags
         }
 
         desiredTags = {t.lower() for t in misc['tags']}
@@ -286,7 +286,7 @@ def uploadProblemZip(client: omegaup.api.Client,
                                   public=payload.get('public', False))
 
 
-def parse_limit_value(value):
+def parse_limit_value(value: None | int | float | str) -> int | None:
     if value is None:
         return None
     if isinstance(value, (int, float)):

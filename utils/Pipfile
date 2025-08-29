@@ -9,7 +9,7 @@ name = "pypi"
 
 mypy = ">=0.782"
 pycodestyle = ">=2.6.0"
-
+flake8 = ">=3.9.2"
 
 [packages]
 

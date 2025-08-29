@@ -2,7 +2,6 @@
 import argparse
 import concurrent.futures
 import datetime
-import json
 import logging
 import os
 import re

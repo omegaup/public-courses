@@ -6,7 +6,7 @@ There are n
 
 Duration of contest is t minutes for each participant, so the first participant finishes the contest at time t, the second — at time t+x, and so on. When a participant finishes the contest, their dissatisfaction equals to the number of participants that started the contest (or starting it now), but haven't yet finished it.
 
-Determine the sum of dissatisfaction of all participants. new update 100
+Determine the sum of dissatisfaction of all participants. new update 60
 
 # Input
 The first line contains a single integer k (1≤k≤1000) — the number of test cases.

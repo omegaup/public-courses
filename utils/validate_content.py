@@ -12,8 +12,7 @@ import re
 import sys
 import subprocess
 import logging
-from pathlib import Path
-from typing import List
+from typing import Any, Dict, List, cast
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 LOG = logging.getLogger(__name__)
@@ -46,7 +45,7 @@ def get_changed_files(repo_root: str) -> List[str]:
         return []
 
 
-def load_problems_from_json(repo_root: str) -> List[dict]:
+def load_problems_from_json(repo_root: str) -> List[Dict[str, Any]]:
     """Load problem paths from problems.json file."""
     problems_json_path = os.path.join(repo_root, "problems.json")
 
@@ -57,7 +56,7 @@ def load_problems_from_json(repo_root: str) -> List[dict]:
     with open(problems_json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    return data.get("problems", [])
+    return cast(List[Dict[str, Any]], data.get("problems", []))
 
 
 def validate_markdown_files(
@@ -149,7 +148,7 @@ def _check_file_images(
     return errors
 
 
-def main():
+def main() -> None:
     """Main validation function."""
     try:
         # Get repository root (assuming script is in utils/ directory)
@@ -233,7 +232,7 @@ def main():
             sys.exit(0)
 
     except Exception as e:
-        LOG.error(f"❌ Validation failed: {str(e)}", file=sys.stderr)
+        LOG.error(f"❌ Validation failed: {str(e)}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

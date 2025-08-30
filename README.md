@@ -1,22 +1,38 @@
-# Public Courses on Omegaup
-This repository contains the course content for the public courses on Omegaup.
+# omegaUp Public Courses on GitHub
 
-## How to Contribute
-You can contribute to the courses by adding new content, fixing typos, or improving existing materials. To do so, please follow these steps:
-1. Fork the repository.
-2. Create a new branch for your changes.
-3. Make your changes and commit them with a clear message.
-4. Push your changes to your forked repository.
-5. Create a pull request to the main repository.
+This repository hosts **omegaUp’s Public Courses**, managed through GitHub to enable open collaboration.  
+Contributors can suggest improvements via **pull requests**, and GitHub Actions will validate and deploy changes to [omegaUp.com](https://omegaup.com).
 
-## How to Sync Courses:
-If you think that a course content in this repository has ran out of sync with the omegaup.com you can raise a pull request to sync the content.
-To do this, follow these steps:
-1. Fork the repository.
-2. Create a new branch for your changes.
-3. Edit the `sync-course.json` file to include the course name and the specific content that is out of sync.
-4. Commit your changes with a clear message.
-5. Push your changes to your forked repository.
-6. Create a pull request to the main repository with target branch sync-course.
-7. When your pull request is merged a github action will run to sync the course content with omegaup.com and add commit to your pull request.
-8. Now the admins will merge this pull request to the main branch.
+---
+
+## 📖 Documentation
+
+A complete guide is available in [Comprehensive Documentation](./DOCUMENTATION.md).  
+It covers setup, workflows, contribution guidelines, and detailed instructions.
+
+---
+
+## 📂 Repository Overview
+
+- `.github/` → Workflows for CI, syncing, and modifying assignments  
+- `Courses/` → Public course content (courses, assignments, problems)  
+- `utils/` → Helper scripts for syncing, validation, and uploads  
+- `problems.json` → Auto-generated list of all problems  
+- `sync-course.json` → Log of course sync requests  
+
+---
+
+## 🔑 Key Sections
+
+1. [Getting Started](./DOCUMENTATION.md#getting-started)  
+2. [Syncing Content](./DOCUMENTATION.md#syncing-content-from-omegaupcom-to-this-repository)  
+3. [Modifying Problems](./DOCUMENTATION.md#modifying-existing-problems-content)  
+4. [Adding/Removing Problems](./DOCUMENTATION.md#adding-or-removing-problems-to-the-couse)  
+5. [Contributing](./DOCUMENTATION.md#contributing)  
+ 
+
+---
+
+## 📜 License
+
+This project is licensed under the [MIT License](LICENSE).

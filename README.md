@@ -35,4 +35,4 @@ It covers setup, workflows, contribution guidelines, and detailed instructions.
 
 ## 📜 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [License](LICENSE).

@@ -2,7 +2,6 @@
 import argparse
 import collections
 import concurrent.futures
-import decimal
 import json
 import logging
 import os
@@ -288,9 +287,6 @@ def _main() -> None:
 
             failureMessages: DefaultDict[
                 str, List[str]] = collections.defaultdict(list)
-
-            normalizedScore = decimal.Decimal(got.get('score', 0))
-            scaledScore = round(normalizedScore, 15) * 100
 
             if testResult['state'] != 'passed':
                 # Build a table that reports groups and case verdicts.

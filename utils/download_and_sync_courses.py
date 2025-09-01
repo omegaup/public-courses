@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import zipfile
-from typing import Dict, Any
+from typing import Dict, Any, List, NamedTuple, cast
 from urllib.parse import urlparse, urljoin
 import omegaup.api
 import shutil
@@ -18,8 +18,6 @@ context = ssl._create_unverified_context()
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
-API_CLIENT = None
-BASE_URL = None
 
 # 👇 Add your course aliases here
 COURSE_ALIASES = [
@@ -31,11 +29,15 @@ BASE_COURSE_FOLDER = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "Courses"))
 
 
-def handle_input():
-    global BASE_URL, API_TOKEN
+class InputArgs(NamedTuple):
+    api_token: str
+    base_url: str
+
+
+def handle_input() -> InputArgs:
     parser = argparse.ArgumentParser(
-        description=f"Download and extract problems from multiple course"
-                    f" assignments"
+        description="Download and extract problems from multiple course"
+                    " assignments"
     )
     parser.add_argument("--url",
                         default="https://omegaup.com",
@@ -45,12 +47,19 @@ def handle_input():
                         default=os.environ.get("OMEGAUP_API_TOKEN"),
                         required=("OMEGAUP_API_TOKEN" not in os.environ))
     args = parser.parse_args()
-    BASE_URL = args.url
-    return args.api_token
+    if args.api_token is None:
+        parser.error(
+            "API token is required (use --api-token or set OMEGAUP_API_TOKEN)")
+    return InputArgs(api_token=str(args.api_token), base_url=str(args.url))
 
 
-def get_json(endpoint: str, params: Dict[str, str]) -> Dict[str, Any]:
-    return API_CLIENT.query(endpoint, params)
+def get_json(
+        client: omegaup.api.Client,
+        endpoint: str,
+        params: Dict[str, str],
+        base_url: str
+) -> Dict[str, Any]:
+    return cast(Dict[str, Any], client.query(endpoint, params))
 
 
 def sanitize_filename(name: str) -> str:
@@ -58,10 +67,13 @@ def sanitize_filename(name: str) -> str:
 
 
 def get_course_details(
+        client: omegaup.api.Client,
         course_alias: str,
-        course_base_folder: str
+        course_base_folder: str,
+        base_url: str
 ) -> Dict[str, Any]:
-    details = get_json("/api/course/details/", {"alias": course_alias})
+    params = {"alias": course_alias}
+    details = get_json(client, "/api/course/details/", params, base_url)
     details.pop("assignments", None)
     details.pop("clarifications", None)
 
@@ -76,29 +88,49 @@ def get_course_details(
     return details
 
 
-def get_assignments(course_alias: str):
-    return get_json("/api/course/listAssignments/",
-                    {"course_alias": course_alias})["assignments"]
+def get_assignments(
+        client: omegaup.api.Client,
+        course_alias: str,
+        base_url: str
+) -> List[Dict[str, Any]]:
+    endpoint = "/api/course/listAssignments/"
+    params = {"course_alias": course_alias}
+    return cast(
+        List[Dict[str, Any]],
+        get_json(client, endpoint, params, base_url)["assignments"]
+    )
 
 
-def get_assignment_details(course_alias: str, assignment_alias: str):
-    return get_json("/api/course/assignmentDetails/", {
+def get_assignment_details(
+        client: omegaup.api.Client,
+        course_alias: str,
+        assignment_alias: str,
+        base_url: str
+) -> Dict[str, Any]:
+    endpoint = "/api/course/assignmentDetails/"
+    params = {
         "course": course_alias,
         "assignment": assignment_alias
-    })
+    }
+    return get_json(client, endpoint, params, base_url)
 
 
-def download_and_unzip(problem_alias: str, assignment_folder: str) -> bool:
+def download_and_unzip(client: omegaup.api.Client, problem_alias: str,
+                       assignment_folder: str, base_url: str) -> bool:
     try:
         download_url = urljoin(
-            BASE_URL,
+            base_url,
             f"/api/problem/download/problem_alias/{problem_alias}/"
         )
         parsed_url = urlparse(download_url)
+        if parsed_url.hostname is None:
+            LOG.error(f"Invalid download URL (missing hostname): "
+                      f"{download_url}")
+            return False
         conn = http.client.HTTPSConnection(parsed_url.hostname,
                                            context=context)
 
-        headers = {'Authorization': f'token {API_CLIENT.api_token}'}
+        headers = {'Authorization': f'token {client.api_token}'}
         path = parsed_url.path
 
         conn.request("GET", path, headers=headers)
@@ -171,10 +203,9 @@ def download_and_unzip(problem_alias: str, assignment_folder: str) -> bool:
         return False
 
 
-def main():
-    global API_CLIENT
-    api_token = handle_input()
-    API_CLIENT = omegaup.api.Client(api_token=api_token, url=BASE_URL)
+def main() -> None:
+    input = handle_input()
+    client = omegaup.api.Client(api_token=input.api_token, url=input.base_url)
 
     if os.path.exists(BASE_COURSE_FOLDER):
         LOG.warning("Delete existing course folder to avoid conflicts")
@@ -186,7 +217,7 @@ def main():
     for course_alias in COURSE_ALIASES:
         LOG.info(f"📘 Starting course: {course_alias}")
         try:
-            assignments = get_assignments(course_alias)
+            assignments = get_assignments(client, course_alias, input.base_url)
 
             if not assignments:
                 LOG.warning(f"No assignments found in {course_alias}.")
@@ -203,8 +234,12 @@ def main():
                 )
 
                 try:
-                    details = get_assignment_details(course_alias,
-                                                     assignment_alias)
+                    details = get_assignment_details(
+                        client,
+                        course_alias,
+                        assignment_alias,
+                        input.base_url
+                    )
                     assignment_folder = os.path.join(course_folder,
                                                      assignment_alias)
                     os.makedirs(assignment_folder, exist_ok=True)
@@ -213,8 +248,10 @@ def main():
 
                     for problem in problems:
                         try:
-                            downloaded = download_and_unzip(problem["alias"],
-                                                            assignment_folder)
+                            downloaded = download_and_unzip(client,
+                                                            problem["alias"],
+                                                            assignment_folder,
+                                                            input.base_url)
                             if downloaded:
                                 rel_path = os.path.join(
                                     "Courses",

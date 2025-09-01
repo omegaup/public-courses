@@ -14,6 +14,7 @@
     - [`sync-course.json`](#sync-coursejson)
   - [Getting Started](#getting-started)
   - [Syncing Content from omegaup.com to this repository](#syncing-content-from-omegaupcom-to-this-repository)
+    - [Important](#important)
   - [Modifying existing Problems Content](#modifying-existing-problems-content)
   - [Adding or removing problems to the Couse:](#adding-or-removing-problems-to-the-couse)
 
@@ -78,13 +79,14 @@ To get started with this project, you will need to have the following prerequisi
 - Python 3
 - Pip
 - Git
+- Pipenv
 
 Once you have the prerequisites installed, you can clone the repository and install the dependencies:
 
 ```bash
 git clone https://github.com/omegaup/public-courses.git
 cd public-courses
-pip install -r utils/requirements.txt
+pipenv install
 ```
 
 ## Syncing Content from omegaup.com to this repository
@@ -105,6 +107,10 @@ git reset --hard origin/main
 git push --force
 ```
 This will push the changes to sync-course branch, now the github action `Sync Course Content` will run which will add a commit made by the Github Actions bot with the latest content from omegaup.com.
+
+### Important
+ - ```--hard``` flag is required to avoid any merge conflicts if the main branch has some changes which are not in the `sync-course` branch and also to update the `sync-course` branch with the latest changes from the `main` branch.
+ - ```-force``` flag is required to push the changes to the `sync-course` branch as we are resetting the branch to main branch and hence the history of the `sync-course` branch will be different from the remote `sync-course` branch.
 
 **For Contributors:**
 If a contributor want to request syncing of content from the omegaup.com to the course repo in the github, they can raise a pr to targetting the `sync-course` branch with the changes in the `sync-course.json` file to keep a log of the sync request. Once the pr gets merged the `sync-courses` branch will have the a commit made by Github Actions bot containg the latest content from omegaup.com.

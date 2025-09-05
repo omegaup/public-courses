@@ -90,7 +90,11 @@ pipenv install
 ```
 
 ## Syncing Content from omegaup.com to this repository
-The github actions are configured to push the latest content whenever some changes are pushed in the `sync-course` branch only
+The github actions are configured to push the latest content whenever some changes are pushed in the `sync-course` branch only.
+
+**Adding the required courses**:
+In the ```download_and_sync_courses.py``` file, add the course to the existing list of courese in ```COURSE_ALIASES``` array.
+
 
 **For Admin:**
 If a admin want to sync the content from omegaup.com to course github repo, they can run the following commands:
@@ -98,11 +102,11 @@ If a admin want to sync the content from omegaup.com to course github repo, they
 ```
 git checkout sync-course
 ```
-2. Reset the branch with the main branch:
+1. Reset the branch with the main branch:
 ```
 git reset --hard origin/main
 ```
-3. Push the changes
+1. Push the changes
 ```
 git push --force
 ```

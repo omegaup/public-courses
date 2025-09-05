@@ -23,8 +23,7 @@ BASE_URL = None
 
 # 👇 Add your course aliases here
 COURSE_ALIASES = [
-    "ResolviendoProblemas2021",
-    "omi-public-course"
+    "ResolviendoProblemas2021"
 ]
 
 BASE_COURSE_FOLDER = os.path.abspath(

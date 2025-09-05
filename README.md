@@ -5,14 +5,14 @@ Contributors can suggest improvements via **pull requests**, and GitHub Actions 
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 A complete guide is available in [Comprehensive Documentation](./DOCUMENTATION.md).  
 It covers setup, workflows, contribution guidelines, and detailed instructions.
 
 ---
 
-## 📂 Repository Overview
+## Repository Overview
 
 - `.github/` → Workflows for CI, syncing, and modifying assignments  
 - `Courses/` → Public course content (courses, assignments, problems)  
@@ -22,7 +22,7 @@ It covers setup, workflows, contribution guidelines, and detailed instructions.
 
 ---
 
-## 🔑 Key Sections
+## Key Sections
 
 1. [Getting Started](./DOCUMENTATION.md#getting-started)  
 2. [Syncing Content](./DOCUMENTATION.md#syncing-content-from-omegaupcom-to-this-repository)  
@@ -33,6 +33,6 @@ It covers setup, workflows, contribution guidelines, and detailed instructions.
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the [License](LICENSE).

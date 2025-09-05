@@ -10,7 +10,8 @@
   "Slow": false,
   "Validator": {
     "Name": "token",
-    "Tolerance": 1e-9
+    "Tolerance": 1e-9,
+    "GroupScorePolicy": "sum-if-not-zero"
   },
   "alias": "Solucion-Tablero-de-Ajedrez",
   "title": "Solucion-Tablero-de-Ajedrez"

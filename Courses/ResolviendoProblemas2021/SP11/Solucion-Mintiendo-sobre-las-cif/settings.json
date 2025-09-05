@@ -10,9 +10,8 @@
   "Slow": false,
   "Validator": {
     "Name": "token",
-    "Tolerance": 1e-09,
-    "GroupScorePolicy": "sum-if-not-zero"
+    "Tolerance": 1e-09
   },
-  "alias": "Solucion-Tablero-de-Ajedrez",
-  "title": "Solucion-Tablero-de-Ajedrez"
+  "alias": "Solucion-Mintiendo-sobre-las-cif",
+  "title": "Solucion-Mintiendo-sobre-las-cif"
 }

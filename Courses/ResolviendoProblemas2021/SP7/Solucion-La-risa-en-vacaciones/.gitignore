@@ -1,0 +1,58 @@
+# OS-specific resources
+.DS_Store
+Thumbs.db
+
+# Backup files
+*~
+*.bak
+*.swp
+*.orig
+
+# Packaged files
+*.zip
+*.bz2
+
+# Karel
+*.kx
+
+# Python
+*.pyc
+
+# IDE files
+*.cbp
+*.depend
+*.layout
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.hi
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.app
+
+# libinteractive files
+Makefile
+libinteractive/
+libinteractive.jar

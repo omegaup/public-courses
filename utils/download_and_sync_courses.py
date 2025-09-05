@@ -24,7 +24,7 @@ BASE_URL = None
 # 👇 Add your course aliases here
 COURSE_ALIASES = [
     "ResolviendoProblemas2021",
-    "omi-public-course"
+    "Curso-de-Python-FutureLabs"
 ]
 
 BASE_COURSE_FOLDER = os.path.abspath(

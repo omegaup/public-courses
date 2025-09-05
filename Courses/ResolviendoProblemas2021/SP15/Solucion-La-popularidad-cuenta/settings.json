@@ -1,0 +1,17 @@
+{
+  "Cases": [],
+  "Limits": {
+    "ExtraWallTime": "0s",
+    "MemoryLimit": 67108864,
+    "OutputLimit": 10485760,
+    "OverallWallTimeLimit": "30s",
+    "TimeLimit": "1s"
+  },
+  "Slow": false,
+  "Validator": {
+    "Name": "token",
+    "Tolerance": 1e-9
+  },
+  "alias": "Solucion-La-popularidad-cuenta",
+  "title": "Solucion-La-popularidad-cuenta"
+}
